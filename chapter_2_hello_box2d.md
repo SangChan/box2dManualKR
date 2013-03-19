@@ -89,8 +89,6 @@ fixture 정의 사항에 상단의 박스를 사용합니다. 밀도는 1로 설
 
 생성과정은 이것으로 완료되었습니다. 이제 시뮬레이션이 가능합니다. 바닥 강체와 dynamic 속성의 강체가 존재합니다. 이제 힘이 어떻게 작용하는지 볼 차례입니다만 몇 가지 이슈가 존재합니다.
 
-That's it for initialization. We are now ready to begin simulating.o we have initialized the ground box and a dynamic box. Now we are ready to set Newton loose to do his thing. We just have a couple more issues to consider.
-
 Box2D는 적분기라는 계산용 알고리즘을 사용합니다. 적분기는 시간의 이산 지점에 대해 물리법칙을 시연합니다. 이는 플립북 넘기기를 스크린으로 옮긴 것과 같은 전통적인 게임루프와 궤를 같이 합니다. 그래서 우리는 시간 단계를 설정할 필요가 있습니다. 일반적인 물리엔진은 1/60 초 내지는 60Hz 를 최소한의 요구사항으로 삼습니다. 이보다 큰 값을 설정할 수도 있습니다만, 좀더 신중해야할 필요가 있습니다. 또한, 너무 많이 변경하는 것도 추천하지 않습니다. 여러 가지 시간 단계는 여러 가지 결과물을 낳을 수 있고, 이는 디버깅의 어려움을 초래합니다. 그러므로 시간 단계가 프레임 레이트와 묶이도록 설정하지 마십시요. (애지간하면 말이죠.)
 각설하고 아래가 시간 단계의 설정입니다. 
 
@@ -138,8 +136,6 @@ world가 현재 범위를 벗어나거나 참조하고 있는 포인터를 제�
 # 2.6 The Testbed
 
 HelloWorld 예제를 이해했다면, Box2D testbed 를 보기 바랍니다. testbed 는 유닛 테스트 프레임웍이며, 다음과 같은 데모 환경을 제공합니다. 
-
-Once you have conquered the HelloWorld example, you should start looking at Box2D's testbed. The testbed is a unit-testing framework and demo environment. Here are some of the features:
 
 * 패닝, 주밍이 되는 카메라 
 * 마우스를 통해 dynamic 속성 강체에 모양 설정가능 
