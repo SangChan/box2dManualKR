@@ -19,20 +19,31 @@ Recall that shapes don’t know about bodies and may be used independently of th
 These are described in the following sections.
 
 # 6.2 Fixture Creation
+
+속성은 속성의 정의를 내리는 과정을 통해 생성되며, 이를 통해 부모인 강체에 해당 정의가 전달됩니다.
+
 Fixtures are created by initializing a fixture definition and then passing the definition to the parent body.
 
 	b2FixtureDef fixtureDef;
-	fixtureDef.shape = &myShape;
+    fixtureDef.shape = &myShape;
 	fixtureDef.density = 1.0f;
 	b2Fixture* myFixture = myBody->CreateFixture(&fixtureDef);
 	
+속성을 생성하여 강체에 적용하였습니다. 속성을 가르키는 포인터를 저장할 필요는 없습니다. 왜냐하면, 부모인 강체가 메모리에서 해제될 때, 자동적으로 속성도 해제되기 때문입니다. 한 개의 강체는 여러 개의 속성을 가질 수도 있습니다.
+
 This creates the fixture and attaches it to the body. You do not need to store the fixture pointer since the fixture will automatically be destroyed when the parent body is destroyed. You can create multiple fixtures on a single body.
+
+강체가 가진 속성을 직접 해제할 수도 있습니다. 아마도 부서질 수 있는 객체에 대해 사용할 것으로 사료됩니다. 강체를 파괴할 때 강체에 포함된 속성을 해제하는 것에 신경을 쓰지 않으면, 속성이 메모리에 잔존 할 수 있습니다.
 
 You can destroy a fixture on the parent body. You may do this to model a breakable object. Otherwise you can just leave the fixture alone and let the body destruction take care of destroying the attached fixtures.
 
 	myBody->DestroyFixture(myFixture);
 
 ## Density
+
+Density 값을 통해 해당 강체의 질량에 대한 계산을 할 수 있습니다. Density는 0 혹은 양수여야 합니다. 안정성을 높이기 위해 일반적으로 모든 속성에 대해 비슷한 값을 주는 것을 권장합니다.
+Density 값을 지정하는 시점에 강체의 질량이 조정되지 않을 수 있습니다. 이 때에는 반드시 ResetMassDate 메소드를 불러 주시기 바랍니다.
+
  The fixture density is used to compute the mass properties of the parent body. The density can be zero or positive. You should generally use similar densities for all your fixtures. This will improve stacking stability.
 The mass of a body is not adjusted when you set the density. You must call ResetMassData for this to occur.
 	
@@ -40,6 +51,8 @@ The mass of a body is not adjusted when you set the density. You must call Reset
 	body->ResetMassData();
 	
 ## Friction
+Friction 값은 각각의 물체가 사실적으로 미끄러지듯이 움직일 수 있도록 사용됩니다. Box2D는 정적인 마찰과 동적인 마찰을 지원하는데, 입력되는 값은 양쪽 모두 동일합니다. Box2D에서는 Coulomb 마찰이라는 노말 벡터에 
+
 Friction is used to make objects slide along each other realistically. Box2D supports static and dynamic friction, but uses the same parameter for both. Friction is simulated accurately in Box2D and the friction strength is proportional to the normal force (this is called Coulomb friction). The friction parameter is usually set between 0 and 1, but can be any non-negative value. A friction value of 0 turns off friction and a value of 1 makes the friction strong. When the friction force is computed between two shapes, Box2D must combine the friction parameters of the two parent fixtures. This is done with the geometric mean:
 
 	float32 friction;
