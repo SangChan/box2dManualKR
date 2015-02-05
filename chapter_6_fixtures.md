@@ -18,13 +18,13 @@ Recall that shapes don’t know about bodies and may be used independently of th
 
 These are described in the following sections.
 
-# 6.2 Fixture Creation
+# 6.2 Fixture Creation<<<<<<< HEAD
 Fixture는 fixture의 특성을 생성하고 부모 강체에 해당 특성을 넘김으로써 생성됩니다.
 
 Fixtures are created by initializing a fixture definition and then passing the definition to the parent body.
 
 	b2FixtureDef fixtureDef;
-	fixtureDef.shape = &myShape;
+    fixtureDef.shape = &myShape;
 	fixtureDef.density = 1.0f;
 	b2Fixture* myFixture = myBody->CreateFixture(&fixtureDef);
 	
@@ -41,9 +41,11 @@ You can destroy a fixture on the parent body. You may do this to model a breakab
 
 ## Density
 
-밀도는 해당 강체의 질량을 계산하고자 사용합니다. 값은 0 혹은 양수입니다. 물체가 쌓일 때, 안정성을 높이기 위해 밀도값은 거의 비슷한 값을 주는 것을 추천합니다.
+밀도는 해당 강체의 질량을 계산하고자 사용합니다. 값은 0 혹은 양수입니다. 안정성을 높이기 위해 밀도값은 거의 비슷한 값을 주는 것을 추천합니다.
 밀도값을 주는 것 만으로 질량이 설정되지는 않고, 반드시 ResetMassData를 호출해야만 합니다.
 
+ The fixture density is used to compute the mass properties of the parent body. The density can be zero or positive. You should generally use similar densities for all your fixtures. This will improve stacking stability.
+The mass of a body is not adjusted when you set the density. You must call ResetMassData for this to occur.
 	
 	fixture->SetDensity(5.0f);
 	body->ResetMassData();
@@ -52,13 +54,13 @@ You can destroy a fixture on the parent body. You may do this to model a breakab
 
 마찰은 물체가 현실적으로 미끄러지도록 만들기 위해 사용됩니다. Box2D는 정적 마찰, 동적 마찰 양쪽을 지원하지만 적용되는 값은 같습니다. 마찰은 Box2D 상에 정확히 구현되어 있으며, 마찰력은 쿨롬 마찰이라고 불리우는 수직항력이 비례합니다. 마찰값은 0 부터 1 사이의 값을 사용하며, 음수가 될 수 없습니다. 마찰력은 값이 0일 때 없고, 1에 가까워질수록 강해집니다. 마찰력이 두 개의 모양에 대해 작용할 때, 마찰값은 각각의 강체에 정의가 되어 있어야 합니다. 다음과 같이 합니다:
 
-
 Friction is used to make objects slide along each other realistically. Box2D supports static and dynamic friction, but uses the same parameter for both. Friction is simulated accurately in Box2D and the friction strength is proportional to the normal force (this is called Coulomb friction). The friction parameter is usually set between 0 and 1, but can be any non-negative value. A friction value of 0 turns off friction and a value of 1 makes the friction strong. When the friction force is computed between two shapes, Box2D must combine the friction parameters of the two parent fixtures. This is done with the geometric mean:
 
 	float32 friction;
 	friction = sqrtf(shape1->friction * shape2->friction);
 	
 따라서, 한 개의 속성값을 0 으로 해놓았다면, 마찰값은 당연하게도 0이 됩니다.
+
 So if one fixture has zero friction then the contact will have zero friction.
 
 ## Restitution
