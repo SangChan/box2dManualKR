@@ -18,7 +18,8 @@ Recall that shapes don’t know about bodies and may be used independently of th
 
 These are described in the following sections.
 
-# 6.2 Fixture Creation<<<<<<< HEAD
+# 6.2 Fixture Creation
+
 Fixture는 fixture의 특성을 생성하고 부모 강체에 해당 특성을 넘김으로써 생성됩니다.
 
 Fixtures are created by initializing a fixture definition and then passing the definition to the parent body.
