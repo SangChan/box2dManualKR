@@ -83,9 +83,11 @@ When a shape develops multiple contacts, restitution is simulated approximately.
 
 ## Filtering
 
-충돌 필터링은 
+충돌 필터링은 각각의 fixture 간의 충돌을 막을 수 있도록 합니다. 예를 들어, 캐릭터를 자전거에 타게 만든다고 가정해 보겠습니다. 자전거와 캐릭터는 각각 지면과 충돌하도록 해야 하겠지만, 캐릭터와 자전거는 서로 겹칠 수 있어야 하므로 이 두개간에 충돌이 일어나서는 안됩니다. Box2D는 이러한 충돌 필터링을 카테고리와 그룹 기능을 이용해 지원합니다.
 
 Collision filtering allows you to prevent collision between fixtures. For example, say you make a character that rides a bicycle. You want the bicycle to collide with the terrain and the character to collide with the terrain, but you don't want the character to collide with the bicycle (because they must overlap). Box2D supports such collision filtering using categories and groups.
+
+
 
 Box2D supports 16 collision categories. For each fixture you can specify which category it belongs to. You also specify what other categories this fixture can collide with. For example, you could specify in a multiplayer game that all players don't collide with each other and monsters don't collide with each other, but players and monsters should collide. This is done with masking bits. For example:
 
