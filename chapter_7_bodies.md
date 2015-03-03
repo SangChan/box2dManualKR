@@ -171,15 +171,23 @@ Box2D performs continuous collision sequentially, so bullets may miss fast movin
 
 ## Activation
 
+강체는 생성하되, 물리법칙이 적용되지 않도록 하고 싶을 수 있습니다. 이 상태는 잠자기 상태와 비슷하지만 다른 강체와의 충돌로 인해 깨어나지 않으며, 강체의 fixture가 광범위하게 존재하지 않습니다. 이는 레이캐스트나 충돌 체크에 의해 감지 되지 않음을 뜻합니다.
+
 You may wish a body to be created but not participate in collision or dynamics. This state is similar to sleeping except the body will not be woken by other bodies and the body's fixtures will not be placed in the broad-phase. This means the body will not participate in collisions, ray casts, etc.
+
+사용자는 강체를 활성화되지 않은 상태로 생성한 후, 나중에 활성화 시킬 수 있습니다.
 
 You can create a body in an inactive state and later re-activate it.
 
 	bodyDef.active = true;
 
+활성화되지 않은 강체에 연결된 joint 또한 물리연산 대상이 아니므로, 강체를 활성화 할때, 연결된 joint도 관리해주어야 합니다.
+
 Joints may be connected to inactive bodies. These joints will not be simulated. You should be careful when you activate a body that its joints are not distorted.
 
 ## User Data
+
+user data 는 자료형이 확정되지 않은 상태의 포인터입니다. 해당 프로그램의 객체를 강체와 연결하는 것이 가능하도록 합니다. 프로그램 내 모든 강체의 user data에 같은 자료형을 쓸 수 있도록 일관성을 유지하는게 좋습니다.
 
 User data is a void pointer. This gives you a hook to link your application objects to bodies. You should be consistent to use the same object type for all body user data.
 
@@ -187,6 +195,9 @@ User data is a void pointer. This gives you a hook to link your application obje
 	bodyDef.userData = &myActor;
 
 # 7.3 Body Factory
+
+강체는 world 클래스에서 제공되는 body factory를 통해 생성 및 소멸 될 수 있습니다. 이를 통해 world가 효율적으로 강체를 메모리에 적재할 수 있고 world 의 자료구조에 강체를 추가할 수 있게 해줍니다. 
+강체는 질량 속성에 따라 동적이거나 정적 일 수 있습니다. 이 두 가지 타입은 같은 방식으로 생성되고 소멸될 수 있습니다.
 
 Bodies are created and destroyed using a body factory provided by the world class. This lets the world create the body with an efficient allocator and add the body to the world data structure.
 Bodies can be dynamic or static depending on the mass properties. Both body types use the same creation and destruction methods.
@@ -196,33 +207,52 @@ Bodies can be dynamic or static depending on the mass properties. Both body type
 	myWorld->DestroyBody(dynamicBody);
 	dynamicBody = NULL;
 
+> 주의 <br>
+> new 혹은 malloc 를 이용해 강체를 생성하면 안됩니다. world 에서 강체에 대해 알지 못할 경우, 초기화도 불가합니다.
+> 
 > Caution <br>
 > You should never use new or malloc to create a body. The world won't know about the body and the body won't be properly initialized.
 
+정적 강체는 다른 강체의 영향하에서 움직이지 않도록 합니다. 정적 강체를 직접 움직일 수 있지만, 둘 이상의 정적 강체 사이에 동적 강체가 깔리도록 해서는 안됩니다. 마찰은 정적 강체를 움직일 때 정상적으로 작동하지 않을 것 입니다. 각각 한 개의 모양을 가지는 정적 강체 여러 개를 만드는 것보다 여러 개의 모양을 가지는 한 개의 정적 강체를 만드는 것이 더 빠릅니다. 내부적으로, Box2D는 정적 강체에 질량 및 반대 질량을 0으로 설정합니다. 이를 통해 대부분의 알고리즘에서 정적 강체를 특별한 경우로 취급하여 연산하지 않도록 해줍니다.
 
 Static bodies do not move under the influence of other bodies. You may manually move static bodies, but you should be careful so that you don't squash dynamic bodies between two or more static bodies. Friction will not work correctly if you move a static body. Static bodies never collide with static or kinematic bodies. It is faster to attach several shapes to a static body than to create several static bodies with a single shape on each one. Internally, Box2D sets the mass and inverse mass of static bodies to zero. This makes the math work out so that most algorithms don't need to treat static bodies as a special case.
 
+Box2D는 강체의 정의나 강체가 가지는 여러 데이터에 대한 참조를 따로 저장해두지는 않습니다. (user data에 대한 포인터는 예외입니다.) 그러므로 임시 강체 정의를 만들어 동일한 강체의 정의에 사용할 수 있습니다.
+
 Box2D does not keep a reference to the body definition or any of the data it holds (except user data pointers). So you can create temporary body definitions and reuse the same body definitions.
+
+Box2D는 모든 종류의 정리작업을 수행하며, b2World 객체를 삭제하여 강체가 소멸되는 것을 방지할 수 있습니다. 그러나 사용자의 게임엔진상에서 강체의 포인터에 null이 들어갈 수 있음을 항상 염두에 두어야 합니다.
+강체를 소멸할때, 부착되어 있던 fixture와 joint도 자동적으로 소멸됩니다. 이는 shape과 joint 포인터를 관리하는데 있어 매우 중요한 점입니다.
 
 Box2D allows you to avoid destroying bodies by deleting your b2World object, which does all the cleanup work for you. However, you should be mindful to nullify body pointers that you keep in your game engine.
 When you destroy a body, the attached fixtures and joints are automatically destroyed. This has important implications for how you manage shape and joint pointers.
 
 # 7.4 Using a Body
 
+강체 생성 후, 강체에 대해 여러가지 수행가능한 작업이 있습니다. 여기에는 질량 특성 설정, 위치 및 속도에 접근, 힘을 가함, 포인트 및 벡터의 변환등이 있습니다.
+
 After creating a body, there are many operations you can perform on the body. These include setting mass properties, accessing position and velocity, applying forces, and transforming points and vectors.
 
 ## Mass Data
 
+모든 강체는 질량(스칼라값), 질량중심점(2차원 벡터), 회전관성(스칼라값)을 가지고 있습니다. 정적 강체에서는 질량과 회전관성은 0으로 설정됩니다. 강체가 회전에 대해 고정되어 있다면, 회전관성도 0입니다.
+
 Every body has a mass (scalar), center of mass (2-vector), and rotational inertia (scalar). For static bodies, the mass and rotational inertia are set to zero. When a body has fixed rotation, its rotational inertia is zero.
+
+바디에 fixture가 추가될 때, 질량 속성도 자동으로 설정됩니다. 또한, 실행중에 강체의 질량을 조정할 수 있습니다. 게임시나리오 상, 질량의 변동이 필요한 경우 일반적으로 많이들 합니다.
 
 Normally the mass properties of a body are established automatically when fixtures are added to the body. You can also adjust the mass of a body at run-time. This is usually done when you have special game scenarios that require altering the mass.
 
 	void SetMassData(const b2MassData* data);
 
+강체의 질량을 직접 설정한 후, fixture 에서 설정한 최초값으로 돌아가고 싶다면 다음과 같이 하면 된다:
+
 After setting a body's mass directly, you may wish to revert to the natural mass dictated by the fixtures. You can do this with:
 
 	void ResetMassData();
 	
+강체의 질량 데이터는 다음과 같은 함수를 통해 확인이 가능합니다:
+
 The body's mass data is available through the following functions:
 
 	float32 GetMass() const;
@@ -231,6 +261,8 @@ The body's mass data is available through the following functions:
 	void GetMassData(b2MassData* data) const;
 	
 ## State Information
+
+강체의 상태에 대해서는 여러 방향으로 제공하고 있습니다. 다음의 함수를 통해 효율적으로 강체의 여러가지 상태를 알 수 있습니다:
 
 There are many aspects to the body's state. You can access this state data efficiently through the following functions:
 
@@ -253,6 +285,9 @@ There are many aspects to the body's state. You can access this state data effic
 	bool IsFixedRotation() const;
 
 ## Position and Velocity
+
+강체의 회전 및 위치에 대한 정보에 접근할 수 있습니다. 일반적으로 게임상의 캐릭터를 화면에 묘사하기 위함입니다. 보통 움직임은 Box2D를 통해 연산되도록 하지만, 직접 위치를 설정하는 것도 가능합니다.
+
 You can access the position and rotation of a body. This is common when rendering your associated game actor. You can also set the position, although this is less common since you will normally use Box2D to simulate movement.
 
 	bool SetTransform(const b2Vec2& position, float32 angle);
@@ -260,9 +295,13 @@ You can access the position and rotation of a body. This is common when renderin
 	const b2Vec2& GetPosition() const;
 	float32 GetAngle() const;
 
+화면 일부 혹은 전체에 대비하여 질량중심점의 위치에 접근하는 것도 가능합니다. Box2D는 내부적으로 질량중심점을 연산에 사용하는 경우가 많습니다. 그렇지만, 일반적으로 접근을 할 필요는 없습니다. 보통 강체의 변환을 통해 작동하도록 하는 경우가 일반적일 것입니다. 예를 들어, 사각형 강체를 가지고 있다고 하겠습니다. 강체의 시작점이 사각형의 꼭지점이라면, 질량중심점은 사각형의 중심에 위치합니다.
+
 You can access the center of mass position in local and world coordinates. Much of the internal simulation in Box2D uses the center of mass. However, you should normally not need to access it. Instead you will usually work with the body transform. For example, you may have a body that is square. The body origin might be a corner of the square, while the center of mass is located at the center of the square.
 
 	const b2Vec2& GetWorldCenter() const;
 	const b2Vec2& GetLocalCenter() const;
+
+또한 선형속도, 각속도에 접근할 수 있습니다. 선형속도는 질량중심점을 위한 것으로, 질량 속성의 변환에 따라 다른 값이 될 수 있습니다.
 
 You can access the linear and angular velocity. The linear velocity is for the center of mass. Therefore, the linear velocity may change if the mass properties change.
