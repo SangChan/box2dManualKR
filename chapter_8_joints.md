@@ -2,22 +2,36 @@
 
 # 8.1 About
 
+강체끼리 혹은 강체와 world 를 joint로 이어줄 수 있습니다. 일반적으로 게임에서는 랙돌, 도르레, 시소(역주: 원문은 teeter 인데 시소인지 라비린스인지 잘 모르겠습니다.) 같은 게임에서 사용됩니다. 재미있는 움직임을 표현하기 위해서 여러 방법으로 joint를 조합할 수 있습니다. 
+
 Joints are used to constrain bodies to the world or to each other. Typical examples in games include ragdolls, teeters, and pulleys. Joints can be combined in many different ways to create interesting motions.
 
+joint에 움직일 수 있는 범위를 설정하여 가동을 제한할 수 있습니다. 또한 joint에 주어지는 힘이나 회전력이 초과되더라도 특정 속도로만 움직이는 모터기능도 제공할 수 있습니다.
+
 Some joints provide limits so you can control the range of motion. Some joint provide motors which can be used to drive the joint at a prescribed speed until a prescribed force/torque is exceeded.
+
+joint motor 는 여러가지로 이용될 수 있는데, 모터를 이용해 원하는 위치와 실제 위치 사이의 차이에 대해 지정된 속도로 이동하도록 할 수 있습니다. joint의 마찰을 다음과 같이 하여 보여줄 수 있습니다. joint의 속도는 0으로 설정하고 모터에 대해 힘 혹은 회전력을 작지만 가능한 최대로 주면, 부하가 너무 커져 joint의 이동을 유지하려고 하게 됩니다.
 
 Joint motors can be used in many ways. You can use motors to control position by specifying a joint velocity that is proportional to the difference between the actual and desired position. You can also use motors to simulate joint friction: set the joint velocity to zero and provide a small, but significant maximum motor force/torque. Then the motor will attempt to keep the joint from moving until the load becomes too strong.
 
 # 8.2 The Joint Definition
 
+joint의 타입은 b2JointDef에서 파생된 것입니다. 모든 joint는 두 개의 다른 강체 사이에 연결됩니다. 그 중 한 개의 강체는 정적일 수 있습니다. 정적 강체 혹은 운동학적 강체를 서로 joint로 연결하는 것은 가능하지만, 물리엔진 연산 중에는 아무 일도 일어나지 않을 것 입니다.
+
 Each joint type has a definition that derives from b2JointDef. All joints are connected between two different bodies. One body may static. Joints between static and/or kinematic bodies are allowed, but have no effect and use some processing time.
 
+유저 데이터를 모든 joint 타입에 설정할 수 있으며, 연결된 강체끼리 서로 충돌하는 것을 방지하기 위한 플래그값을 설정할 수 있습니다. 기본적으로 이렇게 동작하며, collideConnected에 대한 불리언 값을 설정하여 연결된 강체간 동작을 어찌할지 결정할 수 있습니다.
+
 You can specify user data for any joint type and you can provide a flag to prevent the attached bodies from colliding with each other. This is actually the default behavior and you must set the collideConnected Boolean to allow collision between to connected bodies.
+
+대부분의 joint 속성은 기하학적 값을 필요로 합니다. 
 
 Many joint definitions require that you provide some geometric data. Often a joint will be defined by anchor points. These are points fixed in the attached bodies. Box2D requires these points to be specified in local coordinates. This way the joint can be specified even when the current body transforms violate the joint constraint --- a common occurrence when a game is saved and reloaded. Additionally, some joint definitions need to know the default relative angle between the bodies. This is necessary to constrain rotation correctly.
 
 Initializing the geometric data can be tedious, so many joints have initialization functions that use the 
 current body transforms to remove much of the work. However, these initialization functions should usually only be used for prototyping. Production code should define the geometry directly. This will make joint behavior more robust.
+
+관절에 대해 정의는 각 타입에 따라 다릅니다. 하기에 기술 하도록 하겠습니다.
 
 The rest of the joint definition data depends on the joint type. We cover these now.
 
