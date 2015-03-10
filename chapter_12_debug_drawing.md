@@ -1,12 +1,12 @@
 # Chapter 12 Debug Drawing
 
-You can implement the b2DebugDraw class to get detailed drawing of the physics world. Here are the available entities:
+b2DebugDraw 클래스를 구현함으로써 물리엔진상에서 물리법칙이 구현되는 것을 자세하게 그릴 수 있습니다. 다음의 것들을 구현할 수 있습니다:
 
-* shape outlines
-* joint connectivity
-* broad-phase axis-aligned bounding boxes (AABBs)
-* center of mass
- 
-This is the preferred method of drawing these physics entities, rather than accessing the data directly. The reason is that much of the necessary data is internal and subject to change.
+* shape의 윤곽
+* joint간 연결
+* 광범위한 축따라 정렬된 경계박스 (AABB)
+* 질량중심점
 
-The testbed draws physics entities using the debug draw facility and the contact listener, so it serves as the primary example of how to implement debug drawing as well as how to draw contact points.
+데이터에 직접 접근하는 것보다 해당 물리에 대한 속성을 그리는 것이 더 바람직하다. 해당 데이터는 내부적이고 언제든 변경될 수 있기 때문이다.
+
+테스트 케이스는 물리적 속성을 디버그용 그리기 기능과 contact 리스너를 이용해 그리고 있으므로, 디버그용으로 접촉점에 대해 그리는 방법을 나타내는 기본적인 예제로 사용할 수 있습니다.
