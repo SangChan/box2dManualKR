@@ -167,7 +167,7 @@ A joint motor allows you to specify the joint speed (the time derivative of the 
 
 ** "What happens when an irresistible force meets an immovable object?" **
 
-이것이 우아하지 않을 것이라고 확실히 얘기할 수 있습니다. joint의 모터에 회전력의 최대 값을 지정할 수 있습니다. 주어진 회전력이 설정된 최대값을 초과하지 않는 한 모터는 지정된 속도를 유지할 것 입니다. 최대값을 초과한다면, joint는 느려지고, 반전된 값으로 작동하게 될 것 입니다.
+이것이 우아하지 않다는 것만은 확실히 얘기할 수 있습니다. joint의 모터에 회전력의 최대 값을 지정할 수 있습니다. 주어진 회전력이 설정된 최대값을 초과하지 않는 한 모터는 지정된 속도를 유지할 것 입니다. 최대값을 초과한다면, joint는 느려지고, 반전된 값으로 작동하게 될 것 입니다.
 
 I can tell you it's not pretty. So you can provide a maximum torque for the joint motor. The joint motor will maintain the specified speed unless the required torque exceeds the specified maximum. When the maximum torque is exceeded, the joint will slow down and can even reverse.
 
@@ -305,13 +305,22 @@ Pulley joints provide the current lengths.
 	float32 GetLengthB() const;
 
 # 8.9 Gear Joint
+
+만약 정교한 기계 장치를 만들고자 한다면 톱니바퀴가 반드시 필요할 것 입니다. Box2D에서는 원칙적으로 톱니바퀴 모양으로 그려진 shape를 이용하여 톱니바퀴를 만들 수 있습니다. 하지만 이 작업은 효과적이지 않을 뿐 아니라 지루하지 까지 합니다. 또한 맞물린 톱니바퀴가 부드럽게 움직일 수 있도록 배치에도 신경써야 합니다. Box2D는 이런 문제점을 해결할 수 있도록 간단하게 톱니바퀴를 생성하는 gear joint를 제공하고 있습니다. 
+
 If you want to create a sophisticated mechanical contraption you might want to use gears. In principle you can create gears in Box2D by using compound shapes to model gear teeth. This is not very efficient and might be tedious to author. You also have to be careful to line up the gears so the teeth mesh smoothly. Box2D has a simpler method of creating gears:  the gear joint.
+
+gear joint는 revolute joint 혹은 prismatic joint와 연결 가능합니다.
  
 The gear joint can only connect revolute and/or prismatic joints.
+
+pulley joint에서 사용된 비율 처럼 gear joint 에도 비율값이 있습니다. 하지만 gear joint 에서는 무조건 음수값이어야 합니다. 한 개는 revolute joint(회전각) 이고 다른 하나는 prismatic joint(이동) 일 때, 기어비는 길이 단위 만큼 이거나 한 개 이상의 길이 일 수 있음을 명심하기 바랍니다.
 
 Like the pulley ratio, you can specify a gear ratio. However, in this case the gear ratio can be negative. Also keep in mind that when one joint is a revolute joint (angular) and the other joint is prismatic (translation), and then the gear ratio will have units of length or one over length.
 
 	coordinate1 + ratio * coordinate2 == constant
+
+하기에는 gear joint 예제가 있습니다. myBodyA와 myBodyB라는 강체는 같은 강체가 아니므로, 두 개의 joint 도 각자에 기인합니다.
 
 Here is an example gear joint. The bodies myBodyA and myBodyB are any bodies from the two joints, as long as they are not the same bodies.
 	
@@ -322,32 +331,58 @@ Here is an example gear joint. The bodies myBodyA and myBodyB are any bodies fro
 	jointDef.joint2 = myPrismaticJoint;
 	jointDef.ratio = 2.0f * b2_pi / myLength;
 
+gear joint 는 두 개의 다른 joint에 걸려있습니다. 이는 깨지기 쉬운 상황을 초래합니다. 해당 joint가 소멸한다면 어떻게 될까요?
+
 Note that the gear joint depends on two other joints. This creates a fragile situation. What happens if those joints are deleted?
 
+> 주의 <br>
+> 반드시 gear joint에 포함되어 있는 revolute / prismatic joint를 삭제하기 전에 해당 gear joint를 삭제하기 바랍니다. 그렇지 않으면 프로그램이 gear joint 안에 joint 관련 포인터의 부모를 찾지 못하는 문제가 발생하여 문제가 생길 수 있습니다. 마찬가지로 gear joint 내부의 강체를 소멸시키기 전에 gear joint를 먼저 소멸하는 것이 옳습니다.
+> 
 > Caution <br>
 > Always delete gear joints before the revolute/prismatic joints on the gears. Otherwise your code will crash in a bad way due to the orphaned joint pointers in the gear joint. You should also delete the gear joint before you delete any of the bodies involved.
 
 # 8.10 Mouse Joint
+
+mouse joint는 테스트 케이스 상에서 마우스로 강체를 조정하기 위해서 사용되었습니다. 이는 커서의 현재 위치로 강체를 움직이도록 하기 위해 사용되었습니다. 또한, 회전 관련한 제한도 없습니다.
+
 The mouse joint is used in the testbed to manipulate bodies with the mouse. It attempts to drive a point on a body towards the current position of the cursor. There is no restriction on rotation.
 
+mouse joint에는 목표지점, 힘의 최대값, 주파수, 감쇠비를 정의할 수 있습니다. 목표지점은 강체의 첫 기준점과 일치합니다. 힘의 최대값은 여러 개의 동적 강체와의 상호작용에 대해 격렬한 반응을 보이는 것을 막는데 사용합니다. 이는 원하는 만큼을 사용할 수 있습니다. 주파수와 감쇠비는 distance joint에서 사용하는 스프링과 댐퍼 효과와 비슷하게 작용합니다.
+
 The mouse joint definition has a target point, maximum force, frequency, and damping ratio. The target point initially coincides with the body’s anchor point. The maximum force is used to prevent violent reactions when multiple dynamic bodies interact. You can make this as large as you like. The frequency and damping ratio are used to create a spring/damper effect similar to the distance joint.
+
+보통 mouse joint를 게임을 플레이하기 위해 가져다 쓰곤 합니다만, 위치 변경이나 응답속도에 있어 게임 플레이어의 욕구를 충족시켜주지는 못하므로 해당 용도로 사용하지는 못할 것 입니다. 운동학적 강체에 사용해보는 것을 추천합니다.
 
  Many users have tried to adapt the mouse joint for game play. Users often want to achieve precise positioning and instantaneous response. The mouse joint doesn’t work very well in that context. You may wish to consider using kinematic bodies instead.
 
 # 8.11 Wheel Joint
+
+wheel joint는 강체 B의 특정 위치에서 부터 연결된 강체 A를 제한합니다. wheel joint 에는 완충용 스프링도 제공합니다. 자세한 내용은 b2WheelJoint.h 및 Car.h 를 참조하십시요.
+
 The wheel joint restricts a point on bodyB to a line on bodyA. The wheel joint also provides a suspension spring. See b2WheelJoint.h and Car.h for details.
  
 # 8.12 Weld Joint
+
+weld joint는 두 강체 사이의 상대적인 모든 움직임을 제한합니다. 테스트 케이스 중 Cantilever.h 를 참조하면 해당 joint가 어떻게 작동하는지 알 수 있을 것 입니다.
+
 The weld joint attempts to constrain all relative motion between two bodies. See the Cantilever.h in the testbed to see how the weld joint behaves.
 
+부숴질 수 있는 구조를 정의하고자 할 때 weld joint를 사용하는게 좋습니다. 하지만 Box2D의 solver는 joint 가 강체보다는 약한 재질로 반복적으로 인식하므로, 연속된 강체를 weld joint로 연결한 것은 휘어질 수 있음을 의미합니다.
+
 It is tempting to use the weld joint to define breakable structures. However, the Box2D solver is iterative so the joints are a bit soft. So chains of bodies connected by weld joints will flex.
+
+한 개의 강체에서 시작해서 여러 개의 모양으로 부숴질 수 있는 강체를 만드는 것보다 낫습니다. 강체가 부숴지면, fixture를 소멸시키고 새로 생긴 강체에 다시 fixture를 생성하면 됩니다. 테스트 케이스 상의 Breakable 예제를 참조하시기 바랍니다.
 
 Instead it is better to create breakable bodies starting with a single body with multiple fixtures. When the body breaks, you can destroy a fixture and recreate it on a new body. See the Breakable example in the testbed.
 
 # 8.13 Rope Joint
 
+rope joint는 두 지점간의 최대 거리를 제한합니다. 이는 연속된 강체를 늘리거나 무거운 하중이 가해지는 것을 방지하는데 유용하게 사용될 수 있습니다. b2RopeJoint.h 와 RopeJoint.h 를 참조하시기 바랍니다.
+
 The rope joint restricts the maximum distance between two points. This can be useful to prevent chains of bodies from stretching, even under high load. See b2RopeJoint.h and RopeJoint.h for details.
 
 # 8.14 Friction Joint
+
+friction joint는 하강 관련 마찰에 사용됩니다. joint는 2차원 이동관련 마찰 및 회전 관련 마찰을 제공합니다. b2FrictionJoint.h 및 ApplyForce.h를 참조하시기 바랍니다. 
 
 The friction joint is used for top-down friction. The joint provides 2D translational friction and angular friction. See b2FrictionJoint.h and ApplyForce.h for details.
