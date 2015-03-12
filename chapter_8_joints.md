@@ -208,7 +208,7 @@ pulley joint는 현재의 길이를 다음의 메소드로 구할 수 있습니�
 
 gear joint는 revolute joint 혹은 prismatic joint와 연결 가능합니다.
 
-pulley joint에서 사용된 비율 처럼 gear joint 에도 비율값이 있습니다. 하지만 gear joint 에서는 무조건 음수값이어야 합니다. 한 개는 revolute joint(회전각) 이고 다른 하나는 prismatic joint(이동) 일 때, 기어비는 길이 단위 만큼 이거나 한 개 이상의 길이 일 수 있음을 명심하기 바랍니다.
+pulley joint에서 사용된 비율 처럼 gear joint 에도 비율값이 있습니다. 하지만 gear joint 에서는 무조건 음수값일 수도 있습니다. 한 개는 revolute joint(회전각) 이고 다른 하나는 prismatic joint(이동) 일 때, 기어비는 길이 단위 만큼 이거나 한 개 이상의 길이 일 수 있음을 명심하기 바랍니다.
 
 	coordinate1 + ratio * coordinate2 == constant
 
