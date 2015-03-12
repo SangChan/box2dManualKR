@@ -1,11 +1,10 @@
 # Chapter 13 Limitations
 
-Box2D uses several approximations to simulate rigid body physics efficiently. This brings some limitations.
-Here are the current limitations:
+Box2D는 강체 물리 연산을 효율적으로 하기 위해 여러가지 근사치를 사용합니다. 이는 다음과 같은 한계를 초래할 수 있습니다:
 
-1. Stacking heavy bodies on top of much lighter bodies is not stable. Stability degrades as the mass ratio passes 10:1.
-1. Chains of bodies connected by joints may stretch if a lighter body is supporting a heavier body. For example, a wrecking ball connect to a chain of light weight bodies may not be stable. Stability degrades as the mass ratio passes 10:1.
-1. There is typically around 0.5cm of slop in shape versus shape collision.
-1. Continuous collision does not handle joints. So you may see joint stretching on fast moving objects.
-1. Box2D uses the symplectic Euler integration scheme. It does not reproduce parabolic motion of projectiles and has only first-order accuracy. However it is fast and has good stability.
-1. Box2D uses an iterative solver to provide real-time performance. You will not get precisely rigid collisions or pixel perfect accuracy. Increasing the iterations will improve accuracy.
+1. 매우 가벼운 강체 위에 무거운 강체를 얹으면 안정성이 매우 떨어집니다. 질량비가 10:1 이상 일 때 안정성이 저하됩니다.
+2. 강체를 여러 개 joint로 연결할 때, 가벼운 강체에 무거운 강체를 연결하는 경우 joint의 길이가 늘어날 수 있습니다. 예를 들어, 무거운 건물해체용 철구를 여러 개로 이루어진 가벼운 강체에 연결하면 안정적인 구조가 될 수 없습니다. 질량비가 10:1 이상 일 때 안정성이 저하됩니다.
+3. shape 간의 충돌에 있어 일반적으로 0.5cm 정도의 테두리가 존재합니다.
+4. 연쇄충돌시 joint를 관리하지 않습니다. 그래서 빨리 움직이는 객체에서 joint의 길이가 늘어나는 것을 볼 수도 있습니다.
+5. Box2D는 오일러적분법을 사용합니다. 이 방식은 일차적 정확도만을 가지므로, 발사체의 포물선 운동을 동일하게 재현하지는 못합니다. 하지만 속도와 안정성은 뛰어납니다.
+6. Box2D는 반복적인 solver를 사용하므로 실시간 수행이 가능합니다. 강체의 충돌이나 픽셀단위의 정확도같은 것은 기대하기 힘들지만, 반복횟수를 늘림으로 해서 정확도를 증가하는 것은 가능합니다.
